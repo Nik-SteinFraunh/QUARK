@@ -4,6 +4,55 @@
   "git_revision_number": "509f42f13d6657fbc84365b61c543386374e85cb",
   "modules": [
     {
+      "name": "Backtracking",
+      "class": "Backtracking",
+      "module": "modules.applications.optimization.Backtracking.QRISPBacktracking",
+      "submodules": [
+        {
+          "name": "SudokuBacktracking",
+          "class": "SudokuBacktracking",
+          "args": {},
+          "module": "modules.applications.optimization.Backtracking.mappings.SudokuBacktracking",
+          "requirements": [
+            {
+              "name": "qrisp",
+              "version": "0.4"
+            }
+          ],
+          "submodules": [
+            {
+              "name": "QRISPBacktrackingSolver",
+              "class": "QRISPBacktrackingSolver",
+              "args": {},
+              "module": "modules.solvers.QRISPBacktrackingSolver",
+              "requirements": [
+                {
+                  "name": "qrisp",
+                  "version": "0.4"
+                }
+              ],
+              "submodules": [
+                {
+                  "name": "QrispSimulator",
+                  "class": "QrispSimulator",
+                  "args": {},
+                  "module": "modules.devices.QrispSimulator.QrispSimulator",
+                  "requirements": [
+                    {
+                      "name": "qrisp",
+                      "version": "0.4"
+                    }
+                  ],
+                  "submodules": []
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "requirements": []
+    },
+    {
       "name": "PVC",
       "class": "PVC",
       "module": "modules.applications.optimization.PVC.PVC",
