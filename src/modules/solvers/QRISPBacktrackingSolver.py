@@ -1,10 +1,64 @@
 from qrisp import auto_uncompute, QuantumBool, QuantumDictionary, mcx, QuantumFloat, control
 import numpy as np
 
-
+import matplotlib.pyplot as plt
 
 
 import networkx as nx
+
+
+def input_obj_transformationa(input_obj):
+    """
+    Convert a 4x4 Sudoku problem into a graph coloring problem using networkx.
+
+    Parameters:
+    - sudoku_board: 4x4 numpy array with numbers 0 to 3 for set fields and -1 for empty fields.
+
+    Returns:
+    - G: networkx graph representing the Sudoku problem.
+    - empty_nodes: list of nodes corresponding to the empty fields.
+    """
+    if type(input_obj) == nx.graph:
+        #TBD
+        adj_matrix = nx.adjacency_matrix(input_obj)
+        pass
+
+    #Need to adjust to structure
+    input_nodes = input_obj[0]
+    input_edges = input_obj[1]
+    edge_copy = input_edges.copy()
+    adj_dict = {}
+    for edge in edge_copy:
+        for index in range(len(edge)):
+            if edge[index] in list(adj_dict.keys()):
+                adj_dict[edge[index]] +=[edge[1-index]]
+            else:
+                adj_dict.setdefault(edge[index], [edge[1-index]])
+    #build a connection dict
+    
+
+    # Create an empty graph
+    G = nx.Graph()
+    empty_nodes = []
+    # Add nodes and edges
+    for i in range(len(input_nodes)):
+        
+        #test this for now, but might need check for double iteration over same edge
+        if input_nodes[i] == -1:
+            # Add node for each empty cell
+            node = i
+            adj_nodes = adj_dict[i]
+            empty_nodes.append(node)
+            G.add_node(node)
+            for adj in adj_nodes:
+                if input_nodes[adj] == -1: 
+                    G.add_edge(node, adj, edge_type = "qq")
+                else:
+                    G.add_edge(node, adj, edge_type = "cq")
+
+
+    return G, empty_nodes
+
 
 def sudoku_to_graph(sudoku_board):
     """
@@ -22,8 +76,8 @@ def sudoku_to_graph(sudoku_board):
     G = nx.Graph()
     empty_nodes = []
     # Add nodes and edges
-    for i in range(4):
-        for j in range(4):
+    for i in range(sudoku_board.shape[0]):
+        for j in range(sudoku_board.shape[0]):
             if sudoku_board[i, j] == -1:
 
                 # Add node for each empty cell
@@ -62,10 +116,73 @@ def sudoku_to_graph(sudoku_board):
                                 G.add_edge(node, (k, l), edge_type = "qq")
                             else:
                                 G.add_edge(node, (k, l), edge_type = "cq")
+
+    
     return G, empty_nodes
 
+def extract_comparisons(problemType, problemToSolve):
+    if problemType == "Graph":
+        return extract_comparisons_coloring(problemToSolve)
 
-def extract_comparisons(sudoku_board):
+    elif problemType == "Sudoku":
+        return extract_comparisons_sudoku(problemToSolve)
+
+def extract_comparisons_coloring(input_obj):
+    """
+    Takes a Sudoku board in the form of a numpy array
+    where the empty fields are indicated by the value -1.
+
+    Returns two lists:
+    1. The quantum-quantum comparisons in the form of a list[(int, int)]
+    2. The batched classical-quantum comparisons in the form dict({int : list[int]})
+    """
+    #Need to adjust to structure
+    input_nodes = input_obj[0]
+    input_edges = input_obj[1]
+
+    num_empty_fields = sum([1 for index in range(len(input_nodes)) if input_nodes[index] == -1])
+    #print(num_empty_fields)
+    # Generate the comparison graph
+    graph, empty_nodes = input_obj_transformationa( input_obj)
+
+    # Generate the list of required comparisons
+
+    # This dictionary contains the classical-quantum comparisons for each
+    # quantum entry
+
+    cq_checks = {q_assignment_index : [] for q_assignment_index in range(num_empty_fields)}
+    #print(cq_checks)
+    # This dictionary contains the quantum-quantum comparisons as tuples
+    qq_checks = []
+
+    # Each edge of the graph corresponds to a comparison.
+    # We therefore iterate over the edges distinguish between the classical-quantum
+    # and quantum-quantum comparisons
+
+    for edge in graph.edges():
+        edge_type = graph.get_edge_data(*edge)["edge_type"]
+
+        # Append the quantum-quantum comparison to the corresponding list
+        if edge_type == "qq":
+            assigment_index_0 = empty_nodes.index(edge[0])
+            assigment_index_1 = empty_nodes.index(edge[1])
+
+            qq_checks.append((assigment_index_0, assigment_index_1))
+
+        # Append the classical quantum comparison to the corresponding dictionary
+        elif edge_type == "cq":
+
+            if input_nodes[edge[1]] == -1:
+                q_assignment_index = empty_nodes.index(edge[1])
+                cq_checks[q_assignment_index].append(input_nodes[edge[0]])
+            else:
+                q_assignment_index = empty_nodes.index(edge[0])
+                cq_checks[q_assignment_index].append(input_nodes[edge[1]])
+
+    return qq_checks, cq_checks
+
+
+def extract_comparisons_sudoku(sudoku_board):
     """
     Takes a Sudoku board in the form of a numpy array
     where the empty fields are indicated by the value -1.
@@ -114,6 +231,7 @@ def extract_comparisons(sudoku_board):
                 cq_checks[q_assignment_index].append(sudoku_board[edge[1]])
 
     return qq_checks, cq_checks
+
 
 def eval_qq_checks( qq_checks,
                 q_assigments,
@@ -207,7 +325,7 @@ def eval_cq_checks( batched_cq_checks,
     return res_qbls
 
 
-def check_singular_sudoku_assignment(sudoku_board, q_assigments, h):
+def check_singular_problem_assignment(problemType, problemToSolve, q_assigments, h):
     """
     Takes the following arguments:
 
@@ -222,15 +340,21 @@ def check_singular_sudoku_assignment(sudoku_board, q_assigments, h):
 
     The function returns a QuantumBool, indicating whether
     the assigment indicated by h respects the rules of Sudoku.
-    """
+    """  
 
-    num_empty_fields = np.count_nonzero(sudoku_board == -1)
+    if problemType == "Graph":
+        
+        num_empty_fields = sum([1 for index in range(len(problemToSolve[0])) if problemToSolve[0][index] == -1])
+        if num_empty_fields != len(q_assigments):
+            raise Exception("Number of empty field and length of assigment array disagree.")
 
-    if num_empty_fields != len(q_assigments):
-        raise Exception("Number of empty field and length of assigment array disagree.")
+    elif problemType == "Sudoku":
+        num_empty_fields = np.count_nonzero(problemToSolve == -1)
+        if num_empty_fields != len(q_assigments):
+            raise Exception("Number of empty field and length of assigment array disagree.")
 
     # Generate the comparisons
-    qq_checks, cq_checks = extract_comparisons(sudoku_board)
+    qq_checks, cq_checks = extract_comparisons(problemType, problemToSolve)
 
     # Evaluate the comparisons
     comparison_qbls = []
@@ -377,6 +501,10 @@ class QRISPBacktrackingSolver(Solver):
 
         """
         return {
+            "problemType": {  # number of optimization iterations
+                "values": ["Graph", "Sudoku"],
+                "description": "Problem do you want to solve?"
+            },
             "backend": {  # number of optimization iterations
                 "values": ["LocalSimulator", "IBM_MPSSimulator (TBD)"],
                 "description": "Which Simulator do you want to use?"
@@ -416,6 +544,7 @@ class QRISPBacktrackingSolver(Solver):
             method: str
 
         """
+        problemType: str 
         shots: int
         depth: int
         iterations: int
@@ -441,15 +570,13 @@ class QRISPBacktrackingSolver(Solver):
         """
         
         
-        
+        problemType = config["problemType"]
         shots = config["shots"]
         prec = config["precision"]
         backend = config["backend"]
 
         import pandas
         from numpy import genfromtxt
-        sudoku_board  = genfromtxt(r'src\modules\applications\optimization\Backtracking\data\sudoku_problem.csv', delimiter=';')
-        #print(df)
         
         """ for row in range(df.shape[0]):
             row_list = []
@@ -460,31 +587,34 @@ class QRISPBacktrackingSolver(Solver):
         import networkx as nx
         start = start_time_measurement()
 
-        num_empty_fields = np.count_nonzero(sudoku_board == -1)
-
+        if problemType == "Sudoku":
+            problemToSolve   = genfromtxt(r'src\modules\applications\optimization\Backtracking\data\sudoku_problem.csv', delimiter=';')
+            num_empty_fields = np.count_nonzero(problemToSolve == -1)
+        elif problemType == "Graph":
+            from src.modules.applications.optimization.Backtracking.data.graph_coloring import problem_in
+            problemToSolve   = problem_in
+            num_empty_fields = sum([1 for index in range(len(problem_in[0])) if problem_in[0][index] == -1])
         @auto_uncompute
         def accept(tree):
             return tree.h == 0
 
         @auto_uncompute
         def reject(tree):
-
             # Cut off the assignment with height 0
             # since it is not relevant for the sudoku
             # checker
             q_assigments = tree.branch_qa[1:]
-
             # Modify the height to reflect the cut off
             modified_height = tree.h[1:]
-
-            assignment_valid = check_singular_sudoku_assignment(sudoku_board,
+            assignment_valid = check_singular_problem_assignment(problemType,
+                                                                problemToSolve,
                                                                 q_assigments,
                                                                 modified_height)
             return assignment_valid.flip()
 
 
         from qrisp.quantum_backtracking import QuantumBacktrackingTree as QBT
-
+    
         tree = QBT(max_depth = num_empty_fields+1,
                 branch_qv = QuantumFloat(2),
                 accept = accept,
@@ -519,5 +649,5 @@ class QRISPBacktrackingSolver(Solver):
         sol = tree.find_solution(precision = prec)
         final_array = sol[::-1][1:]
         #print(sol[::-1][1:])
-
+        print(final_array)
         return final_array, end_time_measurement(start), {}

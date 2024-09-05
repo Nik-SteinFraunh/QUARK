@@ -22,9 +22,6 @@ from modules.applications.optimization.Optimization import Optimization
 import numpy as np
 from utils import start_time_measurement, end_time_measurement
 
-# define R_rydberg
-R_rydberg = 9.75
-
 
 class Backtracking(Optimization):
     """
@@ -69,6 +66,10 @@ class Backtracking(Optimization):
 
         """
         return {
+                        "problemType": {  # number of optimization iterations
+                "values": ["Graph", "Sudoku"],
+                "description": "Which problem do you want to generate?"
+            }
  
         }
 
@@ -98,14 +99,18 @@ class Backtracking(Optimization):
 
         # check if config has the necessary information
 
-
+        problemType = config["problemType"]
 
         # create problem TBD
-        
+        if problemType == "Sudoku":
         #graph = pandas.read_csv(r'src\modules\applications\optimization\Backtracking\data\sudoku_problem.csv', sep = ";")
-        from numpy import genfromtxt
-        graph  = genfromtxt(r'src\modules\applications\optimization\Backtracking\data\sudoku_problem.csv', delimiter=';')
-        #graph.to_numpy()
+            from numpy import genfromtxt
+            graph  = genfromtxt(r'src\modules\applications\optimization\Backtracking\data\sudoku_problem.csv', delimiter=';')
+            #graph.to_numpy()
+        else:
+            from src.modules.applications.optimization.Backtracking.data.graph_coloring import problem_in
+            graph   = problem_in
+            num_empty_fields = sum([1 for index in range(len(problem_in[0])) if problem_in[0][index] == -1])
         logging.info("Created Sudoku problem from sudoku_problem.csv, with the following attributes:")
         #for item in range(graph.shape[0]):
         logging.info(print(graph))
@@ -234,12 +239,64 @@ class Backtracking(Optimization):
             
             return res
         
+        @auto_uncompute
+        def check_graph_coloring(empty_field_values : QuantumArray):
+            #print(graph)
+            # Create a quantum array, that contains a mix of the classical and quantum values
+            graph = self.application
+            nodes = graph[0]
+            edges = graph[1]
+            quantum_graph = nodes
+            
+            quantum_value_list = list(empty_field_values)
+            
+            # Fill the board
+            for i in range(len(nodes)):
+                
+                    if nodes[i] == -1:
+                        quantum_graph[i] = quantum_value_list.pop(0)
+                    else:
+                        continue
+            
+            # Go through the conditions that need to be satisfied
+            check_values = []   
+
+            for edge in edges:
+                check_values.append(element_distinctness([quantum_graph[edge[0]], quantum_graph[edge[1]]]))
+                
+            #print(check_values)
+            # element_distinctness returns None if only classical values have been compared
+            # Filter these out
+            i = 0
+            while i < len(check_values):
+                if check_values[i] is None:
+                    check_values.pop(i)
+                    continue
+                i += 1
+            
+            # Compute the result
+            res = QuantumBool()
+            mcx(check_values, res)
+            
+            return res
+        
         empty_field_values = QuantumArray(qtype = QuantumFloat(2), shape = (len(solution)))
         empty_field_values[:] = solution
-        test = check_sudoku_board(empty_field_values)
-        #print(test)
-        is_valid =  test.get_measurement() == {True : 1.0}
-        #print(is_valid)
+        if isinstance(self.application, (np.ndarray, np.generic)):
+        # problemType = "sudoku"
+            try: 
+                test = check_sudoku_board(empty_field_values)
+                is_valid =  test.get_measurement() == {True : 1.0}
+            except: 
+                pass
+
+        elif isinstance(self.application, list):
+        # problemType = "sudoku"
+            try: 
+                test = check_graph_coloring(empty_field_values)
+                is_valid =  test.get_measurement() == {True : 1.0}
+            except: 
+                pass
 
         return is_valid, end_time_measurement(start)
 
