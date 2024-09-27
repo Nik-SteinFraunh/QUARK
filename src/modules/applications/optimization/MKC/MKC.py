@@ -105,10 +105,10 @@ class MKC(Optimization):
         if problemType == "Sudoku":
         #graph = pandas.read_csv(r'src\modules\applications\optimization\Backtracking\data\sudoku_problem.csv', sep = ";")
             from numpy import genfromtxt
-            graph  = genfromtxt(r'src\modules\applications\optimization\Backtracking\data\sudoku_problem.csv', delimiter=';')
+            graph  = genfromtxt(r'src\modules\applications\optimization\MKC\data\sudoku_problem.csv', delimiter=';')
             #graph.to_numpy()
         else:
-            from src.modules.applications.optimization.Backtracking.data.graph_coloring import problem_in
+            from src.modules.applications.optimization.MKC.data.graph_coloring import problem_in
             graph   = problem_in
             num_empty_fields = sum([1 for index in range(len(problem_in[0])) if problem_in[0][index] == -1])
         logging.info("Created Sudoku problem from sudoku_problem.csv, with the following attributes:")

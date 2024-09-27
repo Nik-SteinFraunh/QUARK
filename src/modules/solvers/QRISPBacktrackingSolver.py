@@ -588,10 +588,10 @@ class QRISPBacktrackingSolver(Solver):
         start = start_time_measurement()
 
         if problemType == "Sudoku":
-            problemToSolve   = genfromtxt(r'src\modules\applications\optimization\Backtracking\data\sudoku_problem.csv', delimiter=';')
+            problemToSolve   = genfromtxt(r'src\modules\applications\optimization\MKC\data\sudoku_problem.csv', delimiter=';')
             num_empty_fields = np.count_nonzero(problemToSolve == -1)
         elif problemType == "Graph":
-            from src.modules.applications.optimization.Backtracking.data.graph_coloring import problem_in
+            from src.modules.applications.optimization.MKC.data.graph_coloring import problem_in
             problemToSolve   = problem_in
             num_empty_fields = sum([1 for index in range(len(problem_in[0])) if problem_in[0][index] == -1])
         @auto_uncompute
