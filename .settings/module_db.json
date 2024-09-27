@@ -4,19 +4,19 @@
   "git_revision_number": "509f42f13d6657fbc84365b61c543386374e85cb",
   "modules": [
     {
-      "name": "Backtracking",
-      "class": "Backtracking",
-      "module": "modules.applications.optimization.Backtracking.QRISPBacktracking",
+      "name": "MKC",
+      "class": "MKC",
+      "module": "modules.applications.optimization.MKC.MKC",
       "submodules": [
         {
-          "name": "SudokuBacktracking",
-          "class": "SudokuBacktracking",
+          "name": "QrispBacktrackingColoring",
+          "class": "QrispBacktrackingColoring",
           "args": {},
-          "module": "modules.applications.optimization.Backtracking.mappings.SudokuBacktracking",
+          "module": "modules.applications.optimization.MKC.mappings.QrispBacktrackingColoring",
           "requirements": [
             {
               "name": "qrisp",
-              "version": "0.4"
+              "version": "0.4.12"
             }
           ],
           "submodules": [
@@ -40,7 +40,7 @@
                   "requirements": [
                     {
                       "name": "qrisp",
-                      "version": "0.4"
+                      "version": "0.4.12"
                     }
                   ],
                   "submodules": []
