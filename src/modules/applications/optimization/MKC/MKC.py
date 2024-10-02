@@ -36,7 +36,7 @@ class MKC(Optimization):
         Constructor method
         """
         super().__init__("MKC")
-        self.submodule_options = ["QrispBacktrackingColoring"]
+        self.submodule_options = ["QrispColoring"]
 
     @staticmethod
     def get_requirements() -> list[dict]:
@@ -53,9 +53,9 @@ class MKC(Optimization):
         return "Set size"
 
     def get_default_submodule(self, option: str) -> Core:
-        if option == "QrispBacktrackingColoring":
-            from modules.applications.optimization.MKC.mappings.QrispBacktrackingColoring import MaxKappaGraphColoring  # pylint: disable=C0415
-            return MaxKappaGraphColoring()
+        if option == "QrispColoring":
+            from modules.applications.optimization.MKC.mappings.QrispColoring import QrispColoring  # pylint: disable=C0415
+            return QrispColoring()
         else:
             raise NotImplementedError(f"Mapping Option {option} not implemented")
 
@@ -66,10 +66,7 @@ class MKC(Optimization):
 
         """
         return {
-                        "problemType": {  # number of optimization iterations
-                "values": ["Graph", "Sudoku"],
-                "description": "Which problem do you want to generate?"
-            }
+
  
         }
 
@@ -99,18 +96,17 @@ class MKC(Optimization):
 
         # check if config has the necessary information
 
-        problemType = config["problemType"]
+        """ problemType = None
 
         # create problem TBD
         if problemType == "Sudoku":
         #graph = pandas.read_csv(r'src\modules\applications\optimization\Backtracking\data\sudoku_problem.csv', sep = ";")
             from numpy import genfromtxt
-            graph  = genfromtxt(r'src\modules\applications\optimization\MKC\data\sudoku_problem.csv', delimiter=';')
-            #graph.to_numpy()
-        else:
-            from src.modules.applications.optimization.MKC.data.graph_coloring import problem_in
-            graph   = problem_in
-            num_empty_fields = sum([1 for index in range(len(problem_in[0])) if problem_in[0][index] == -1])
+            graph  = genfromtxt(r'src\modules\applications\optimization\MKC\data\sudoku_problem.csv', delimiter=';') """
+
+        from src.modules.applications.optimization.MKC.data.graph_coloring import problem_in
+        graph   = problem_in
+        num_empty_fields = sum([1 for index in range(len(problem_in[0])) if problem_in[0][index] == -1])
         logging.info("Created Sudoku problem from sudoku_problem.csv, with the following attributes:")
         #for item in range(graph.shape[0]):
         logging.info(print(graph))

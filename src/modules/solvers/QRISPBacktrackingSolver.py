@@ -501,10 +501,7 @@ class QRISPBacktrackingSolver(Solver):
 
         """
         return {
-            "problemType": {  # number of optimization iterations
-                "values": ["Graph", "Sudoku"],
-                "description": "Problem do you want to solve?"
-            },
+
             "backend": {  # number of optimization iterations
                 "values": ["LocalSimulator", "IBM_MPSSimulator (TBD)"],
                 "description": "Which Simulator do you want to use?"
@@ -553,7 +550,7 @@ class QRISPBacktrackingSolver(Solver):
 
 
 
-    def run(self, mapped_problem: any, device_wrapper: any, config: Config, **kwargs: dict) -> (any, float):
+    def run(self, mapped_problem: any, device_wrapper: any, config: Config, **kwargs: dict):
         """
         Run Qrisp QIRO on the local Qrisp simulator
 
@@ -570,7 +567,7 @@ class QRISPBacktrackingSolver(Solver):
         """
         
         
-        problemType = config["problemType"]
+        #problemType = config["problemType"]
         shots = config["shots"]
         prec = config["precision"]
         backend = config["backend"]
@@ -587,13 +584,14 @@ class QRISPBacktrackingSolver(Solver):
         import networkx as nx
         start = start_time_measurement()
 
-        if problemType == "Sudoku":
+        """ if problemType == "Sudoku":
             problemToSolve   = genfromtxt(r'src\modules\applications\optimization\MKC\data\sudoku_problem.csv', delimiter=';')
             num_empty_fields = np.count_nonzero(problemToSolve == -1)
-        elif problemType == "Graph":
-            from src.modules.applications.optimization.MKC.data.graph_coloring import problem_in
-            problemToSolve   = problem_in
-            num_empty_fields = sum([1 for index in range(len(problem_in[0])) if problem_in[0][index] == -1])
+        elif problemType == "Graph": """
+        problemType = "Graph"
+        from src.modules.applications.optimization.MKC.data.graph_coloring import problem_in
+        problemToSolve   = problem_in
+        num_empty_fields = sum([1 for index in range(len(problem_in[0])) if problem_in[0][index] == -1])
         @auto_uncompute
         def accept(tree):
             return tree.h == 0

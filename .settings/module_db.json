@@ -9,10 +9,10 @@
       "module": "modules.applications.optimization.MKC.MKC",
       "submodules": [
         {
-          "name": "QrispBacktrackingColoring",
-          "class": "QrispBacktrackingColoring",
+          "name": "QrispColoring",
+          "class": "QrispColoring",
           "args": {},
-          "module": "modules.applications.optimization.MKC.mappings.QrispBacktrackingColoring",
+          "module": "modules.applications.optimization.MKC.mappings.QrispColoring",
           "requirements": [
             {
               "name": "qrisp",
@@ -29,6 +29,33 @@
                 {
                   "name": "qrisp",
                   "version": "0.4"
+                }
+              ],
+              "submodules": [
+                {
+                  "name": "QrispSimulator",
+                  "class": "QrispSimulator",
+                  "args": {},
+                  "module": "modules.devices.QrispSimulator.QrispSimulator",
+                  "requirements": [
+                    {
+                      "name": "qrisp",
+                      "version": "0.4.12"
+                    }
+                  ],
+                  "submodules": []
+                }
+              ]
+            },
+            {
+              "name": "QRISPQAOASolverMKC",
+              "class": "QRISPQAOASolverMKC",
+              "args": {},
+              "module": "modules.solvers.QRISPQAOASolverMKC",
+              "requirements": [
+                {
+                  "name": "qrisp",
+                  "version": "0.4.12"
                 }
               ],
               "submodules": [

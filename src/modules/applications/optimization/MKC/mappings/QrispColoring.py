@@ -22,9 +22,9 @@ from modules.applications.Mapping import *
 from utils import start_time_measurement, end_time_measurement
 
 
-class QrispBacktrackingColoring(Mapping):
+class QrispColoring(Mapping):
     """
-    Neutral atom formulation for MIS.
+    Qrisp graph coloring formulation for MKC.
     """
 
     def __init__(self):
@@ -32,7 +32,7 @@ class QrispBacktrackingColoring(Mapping):
         Constructor method
         """
         super().__init__()
-        self.submodule_options = ["BacktrackingColoring"]
+        self.submodule_options = ["BacktrackingColoring", "QAOAColoring"]
 
     @staticmethod
     def get_requirements() -> list[dict]:
@@ -94,5 +94,8 @@ class QrispBacktrackingColoring(Mapping):
         if option == "BacktrackingColoring":
             from modules.solvers.QRISPBacktrackingSolver import QRISPBacktrackingSolver  # pylint: disable=C0415
             return QRISPBacktrackingSolver()
+        if option == "QAOAColoring":
+            from modules.solvers.QRISPQAOASolverMKC import QRISPQAOASolverMKC  # pylint: disable=C0415
+            return QRISPQAOASolverMKC()
         else:
             raise NotImplementedError(f"Solver Option {option} not implemented")
