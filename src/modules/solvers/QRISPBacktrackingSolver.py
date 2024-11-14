@@ -503,7 +503,7 @@ class QRISPBacktrackingSolver(Solver):
         return {
 
             "backend": {  # number of optimization iterations
-                "values": ["LocalSimulator", "IBM_MPSSimulator (TBD)"],
+                "values": ["LocalSimulator"],
                 "description": "Which Simulator do you want to use?"
             },
             "shots": {  # number measurements to make on circuit
